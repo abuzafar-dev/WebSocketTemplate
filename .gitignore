@@ -3,5 +3,9 @@ __pycache__/
 *.pyc
 db.postgressql
 .idea/
+.vscode/
+.claude/
 .env
+.env.*
+!.env.example
 .mcp.json
