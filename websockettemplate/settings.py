@@ -12,9 +12,10 @@ SECRET_KEY = getenv('SECRET_KEY')
 if not SECRET_KEY:
     raise RuntimeError('SECRET_KEY .env faylda belgilanmagan (namuna: .env.example)')
 
-DEBUG = getenv('DEBUG', 'True') == 'True'
+# Standart holda yopiq; lokal ishlash uchun .env da DEBUG=True.
+DEBUG = getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = [h for h in getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',') if h]
 
 
 

@@ -6,11 +6,16 @@ django_asgi_app = get_asgi_application()
 
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
+from channels.security.websocket import AllowedHostsOriginValidator
 import apps.routing
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
-    "websocket": AuthMiddlewareStack(
-        URLRouter(apps.routing.websocket_urlpatterns)
+    # Origin ALLOWED_HOSTS bilan tekshiriladi: boshqa sayt foydalanuvchining sessiya
+    # cookie'si bilan WebSocket ochib, uning nomidan ishlay olmaydi (CSWSH).
+    "websocket": AllowedHostsOriginValidator(
+        AuthMiddlewareStack(
+            URLRouter(apps.routing.websocket_urlpatterns)
+        )
     ),
 })
