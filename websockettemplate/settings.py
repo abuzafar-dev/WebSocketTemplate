@@ -60,16 +60,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'websockettemplate.wsgi.application'
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': getenv('DB_NAME', 'websockettemplate'),
-        'USER': getenv('DB_USER', 'postgres'),
-        'PASSWORD': getenv('DB_PASSWORD', 'postgres'),
-        'HOST': getenv('DB_HOST', 'localhost'),
-        'PORT': getenv('DB_PORT', '5432'),
+# DB_HOST berilsa PostgreSQL, aks holda SQLite (testlar va tez ishga tushirish uchun)
+if getenv('DB_HOST'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': getenv('DB_NAME', 'websockettemplate'),
+            'USER': getenv('DB_USER', 'postgres'),
+            'PASSWORD': getenv('DB_PASSWORD', 'postgres'),
+            'HOST': getenv('DB_HOST'),
+            'PORT': getenv('DB_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 
@@ -108,12 +117,16 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ASGI_APPLICATION = "websockettemplate.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [(getenv('REDIS_HOST', '127.0.0.1'), int(getenv('REDIS_PORT', '6379')))],
+# REDIS_HOST berilsa Redis (bir nechta jarayon uchun), aks holda xotirada
+if getenv('REDIS_HOST'):
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
+            "CONFIG": {
+                "hosts": [(getenv('REDIS_HOST'), int(getenv('REDIS_PORT', '6379')))],
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 

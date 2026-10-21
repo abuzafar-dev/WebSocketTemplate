@@ -9,3 +9,4 @@ db.postgressql
 .env.*
 !.env.example
 .mcp.json
+db.sqlite3

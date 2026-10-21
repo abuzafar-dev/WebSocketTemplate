@@ -13,7 +13,8 @@ layer so messages can be broadcast across multiple server processes.
 
 ## Getting started
 
-Redis and PostgreSQL must be running first:
+Without `DB_HOST` / `REDIS_HOST` in `.env` it runs on SQLite and an in-memory
+channel layer, so nothing else is needed. For production set both and start them:
 
 ```bash
 docker run -d -p 6379:6379 redis:7-alpine
@@ -37,12 +38,20 @@ it serves both HTTP and WebSocket.
 Connect to `ws://127.0.0.1:8000/ws/` — from the browser console:
 
 ```js
-const ws = new WebSocket("ws://127.0.0.1:8000/ws/");
-ws.onopen = () => ws.send("hello");
+const ws = new WebSocket("ws://127.0.0.1:8000/ws/python/");
+ws.onmessage = (e) => console.log(JSON.parse(e.data));
+ws.onopen = () => ws.send(JSON.stringify({ message: "hello" }));
 ```
 
-The consumer accepts the connection; `receive` is left empty on purpose — that
-is where your own logic goes.
+Every client connected to the same room (`/ws/<room>/`, default `lobby`)
+receives the message as `{"room", "sender", "message"}`. Invalid JSON or an
+empty message returns `{"error": ...}`.
+
+## Tests
+
+```bash
+bash scripts/ci.sh      # check + migrations + 5 WebSocket tests
+```
 
 ## Layout
 
