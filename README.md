@@ -4,6 +4,13 @@ A minimal Django + Channels starter for real-time features: an ASGI
 application that serves HTTP and WebSocket side by side, with a Redis channel
 layer so messages can be broadcast across multiple server processes.
 
+## Quick start
+
+```bash
+make run     # creates .venv and .env, installs deps, starts the app
+make test    # checks + tests
+```
+
 ## Stack
 
 - Django 6.1 + Channels 4.3 (ASGI)
