@@ -54,10 +54,29 @@ Every client connected to the same room (`/ws/<room>/`, default `lobby`)
 receives the message as `{"room", "sender", "message"}`. Invalid JSON or an
 empty message returns `{"error": ...}`.
 
+## Chat page + history
+
+Open `http://127.0.0.1:8000/chat/` (or `/chat/<room>/`) — a ready chat UI.
+Every message is saved to the `Message` model; when someone joins a room the
+last 50 messages of that room are sent first as `{"room", "sender", "message", "history": true}`.
+Messages longer than 1000 characters return `{"error": ...}`.
+
+## Live user count
+
+Open `http://127.0.0.1:8000/` — it shows how many users are in the database
+and the latest ones, and updates live over `ws://127.0.0.1:8000/ws/users/`.
+On connect the socket sends `{"event": "snapshot", "count", "users"}`; every
+time a `User` row is created or deleted (admin, shell, signup, ...) all clients
+get `{"event": "added" | "removed", "username", "count", "users"}`.
+
+Users created from a separate process (e.g. `manage.py createsuperuser` while
+the server runs) only reach the browser when `REDIS_HOST` is set — the
+in-memory channel layer works inside one process only.
+
 ## Tests
 
 ```bash
-bash scripts/ci.sh      # check + migrations + 5 WebSocket tests
+bash scripts/ci.sh      # check + migrations + 9 tests
 ```
 
 ## Layout

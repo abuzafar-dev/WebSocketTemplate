@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<title>Userlar</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 16px; }
+  .count { font-size: 64px; font-weight: 700; margin: 0; }
+  .status { color: #888; font-size: 14px; }
+  .status.on { color: #2a7; }
+  ul { padding: 0; list-style: none; }
+  li { padding: 8px 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+  li small { color: #888; }
+  li.new { animation: flash 2s; }
+  #log p { margin: 4px 0; font-size: 14px; }
+  @keyframes flash { from { background: #dfd; } to { background: transparent; } }
+</style>
+</head>
+<body>
+  <h1>Userlar soni</h1>
+  <p class="count" id="count">{{ count }}</p>
+  <p class="status" id="status">ulanmoqda…</p>
+
+  <h2>Oxirgi qo'shilganlar</h2>
+  <ul id="users">
+    {% for u in users %}<li><span>{{ u.username }}</span><small>{{ u.date_joined|slice:":19" }}</small></li>{% endfor %}
+  </ul>
+
+  <h2>Hodisalar</h2>
+  <div id="log"></div>
+
+<script>
+const countEl = document.getElementById("count");
+const usersEl = document.getElementById("users");
+const statusEl = document.getElementById("status");
+const logEl = document.getElementById("log");
+
+function render(data) {
+  countEl.textContent = data.count;
+  usersEl.innerHTML = "";
+  data.users.forEach(u => {
+    const li = document.createElement("li");
+    if (data.event === "added" && u.username === data.username) li.className = "new";
+    const name = document.createElement("span");
+    name.textContent = u.username;
+    const date = document.createElement("small");
+    date.textContent = u.date_joined.slice(0, 19).replace("T", " ");
+    li.append(name, date);
+    usersEl.append(li);
+  });
+}
+
+function log(text) {
+  const p = document.createElement("p");
+  p.textContent = new Date().toLocaleTimeString() + " — " + text;
+  logEl.prepend(p);
+}
+
+function connect() {
+  const proto = location.protocol === "https:" ? "wss" : "ws";
+  const ws = new WebSocket(`${proto}://${location.host}/ws/users/`);
+  ws.onopen = () => { statusEl.textContent = "jonli"; statusEl.className = "status on"; };
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    render(data);
+    if (data.event === "added") log(`yangi user qo'shildi: ${data.username}`);
+    if (data.event === "removed") log(`user o'chirildi: ${data.username}`);
+  };
+  ws.onclose = () => {
+    statusEl.textContent = "uzildi, qayta ulanmoqda…"; statusEl.className = "status";
+    setTimeout(connect, 2000);
+  };
+}
+connect();
+</script>
+</body>
+</html>

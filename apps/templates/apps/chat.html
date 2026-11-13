@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chat — {{ room }}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 32px auto; padding: 0 16px; color: #1a1a1a; }
+  .row { display: flex; gap: 8px; }
+  input { flex: 1; min-width: 0; padding: 9px 10px; border: 1px solid #ccc; border-radius: 6px; font: inherit; }
+  button { padding: 9px 16px; border: 0; border-radius: 6px; background: #2e9e5b; color: #fff; cursor: pointer; font: inherit; }
+  button:disabled { background: #b5b5b5; cursor: not-allowed; }
+  .status { color: #888; font-size: 14px; margin: 10px 0; }
+  .status.on { color: #2a7; }
+  #messages { height: 420px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; background: #fafafa;
+              padding: 12px; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+  .msg { max-width: 78%; padding: 8px 12px; border-radius: 12px; overflow-wrap: anywhere; align-self: flex-start; background: #e9e9e9; }
+  .msg.mine { align-self: flex-end; background: #2e9e5b; color: #fff; }
+  .msg.history { opacity: .7; }
+  .msg .who { display: block; font-size: 12px; font-weight: 600; opacity: .7; margin-bottom: 2px; }
+  .msg.error { align-self: center; background: none; color: #c33; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>Chat</h1>
+
+  <form class="row" id="roomForm">
+    <input id="room" value="{{ room }}" maxlength="50" pattern="[\w-]+" title="Harf, raqam, _ yoki -" required>
+    <button type="submit">Kirish</button>
+  </form>
+  <p class="status" id="status">ulanmoqda…</p>
+
+  <div id="messages"></div>
+
+  <form class="row" id="sendForm">
+    <input id="text" placeholder="Xabar yozing..." maxlength="1000" autocomplete="off" disabled>
+    <button id="sendBtn" disabled>Yuborish</button>
+  </form>
+
+<script>
+  const ROOM = "{{ room|escapejs }}";
+  const ME = "{{ request.user.username|default:'anonim'|escapejs }}";
+  const proto = location.protocol === "https:" ? "wss://" : "ws://";
+
+  const box = document.getElementById("messages");
+  const statusEl = document.getElementById("status");
+  const text = document.getElementById("text");
+  const sendBtn = document.getElementById("sendBtn");
+
+  function add(kind, body, who) {
+    const el = document.createElement("div");
+    el.className = "msg " + kind;
+    if (who) {
+      const w = document.createElement("span");
+      w.className = "who";
+      w.textContent = who;
+      el.appendChild(w);
+    }
+    el.appendChild(document.createTextNode(body));  // textContent — XSS bo'lmaydi
+    box.appendChild(el);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  function setOnline(on) {
+    text.disabled = sendBtn.disabled = !on;
+    statusEl.className = "status" + (on ? " on" : "");
+  }
+
+  const ws = new WebSocket(proto + location.host + "/ws/" + ROOM + "/");
+  ws.onopen = () => { statusEl.textContent = "Xona: " + ROOM + " · siz: " + ME; setOnline(true); text.focus(); };
+  ws.onclose = () => { statusEl.textContent = "Ulanish uzildi — sahifani yangilang"; setOnline(false); };
+  ws.onmessage = (e) => {
+    const data = JSON.parse(e.data);
+    if (data.error) { add("error", data.error); return; }
+    const mine = ME !== "anonim" && data.sender === ME;
+    add((mine ? "mine" : "") + (data.history ? " history" : ""), data.message, mine ? "" : data.sender);
+  };
+
+  document.getElementById("sendForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const value = text.value.trim();
+    if (!value || ws.readyState !== WebSocket.OPEN) return;
+    ws.send(JSON.stringify({ message: value }));
+    text.value = "";
+  });
+
+  document.getElementById("roomForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const room = document.getElementById("room").value.trim();
+    if (room) location.href = "/chat/" + encodeURIComponent(room) + "/";
+  });
+</script>
+</body>
+</html>
