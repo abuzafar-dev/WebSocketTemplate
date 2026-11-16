@@ -18,7 +18,6 @@ class Consumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_add(self.group, self.channel_name)
         await self.accept()
 
-        # Xonaga kirganga oxirgi xabarlar (bazadan)
         for item in await self.get_history():
             await self.send(text_data=json.dumps(item))
 
@@ -64,8 +63,6 @@ class Consumer(AsyncWebsocketConsumer):
 
 
 class UsersConsumer(AsyncWebsocketConsumer):
-    """Bazadagi userlar soni: ulanganda hozirgi holat, keyin har qo'shilish/o'chirishda yangilanish."""
-
     async def connect(self):
         await self.channel_layer.group_add(USERS_GROUP, self.channel_name)
         await self.accept()

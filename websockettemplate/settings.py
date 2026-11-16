@@ -17,7 +17,6 @@ DEBUG = getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = getenv('ALLOWED_HOSTS', '*').split(',')
 
 
-
 INSTALLED_APPS = [
     'daphne',
     'django.contrib.admin',
@@ -60,7 +59,6 @@ TEMPLATES = [
 WSGI_APPLICATION = 'websockettemplate.wsgi.application'
 
 
-# DB_HOST berilsa PostgreSQL, aks holda SQLite (testlar va tez ishga tushirish uchun)
 if getenv('DB_HOST'):
     DATABASES = {
         'default': {
@@ -81,7 +79,6 @@ else:
     }
 
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -98,7 +95,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -106,7 +102,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 
 STATIC_URL = 'static/'
@@ -117,7 +112,6 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ASGI_APPLICATION = "websockettemplate.asgi.application"
 
-# REDIS_HOST berilsa Redis (bir nechta jarayon uchun), aks holda xotirada
 if getenv('REDIS_HOST'):
     CHANNEL_LAYERS = {
         "default": {

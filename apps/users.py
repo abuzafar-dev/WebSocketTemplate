@@ -5,7 +5,6 @@ LATEST_LIMIT = 20
 
 
 def users_snapshot():
-    """Bazadagi userlar soni va oxirgi qo'shilganlar ro'yxati."""
     User = get_user_model()
     latest = User.objects.order_by("-date_joined", "-pk")[:LATEST_LIMIT]
     return {

@@ -2,8 +2,6 @@ from django.db import models
 
 
 class Message(models.Model):
-    """Chat xabari — xonaga kirgan odam oxirgi xabarlarni ko'rishi uchun saqlanadi."""
-
     room = models.CharField(max_length=50, db_index=True)
     sender = models.CharField(max_length=150)
     text = models.TextField(max_length=1000)
